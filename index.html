@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mindanao Discoveries</title>
+
+    <!-- Leaflet Map Library -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <style>
+        /* -------------------------------------
+           GLOBAL TROPICAL JUNGLE THEME
+        ------------------------------------- */
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            scroll-behavior: smooth;
+
+            background: linear-gradient(
+                160deg,
+                #d6f5da 0%,
+                #b8ebc5 40%,
+                #9bd9af 100%
+            );
+
+            background-image:
+                radial-gradient(rgba(255,255,255,0.35) 1px, transparent 1px),
+                url("https://www.transparenttextures.com/patterns/leaves.png");
+
+            background-size: 40px 40px, 300px;
+            background-attachment: fixed;
+        }
+
+        /* -------------------------------------
+           HEADER
+        ------------------------------------- */
+        header {
+            background: linear-gradient(90deg, #0b3d2e, #145a3b);
+            padding: 25px;
+            color: white;
+            text-align: center;
+            font-size: 26px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+        }
+
+        /* -------------------------------------
+           NAVIGATION MENU
+        ------------------------------------- */
+        nav {
+            background-color: #0f4a32;
+            padding: 10px 20px;
+        }
+
+        nav ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        nav ul li {
+            position: relative;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            display: block;
+            transition: 0.3s;
+        }
+
+        nav a:hover {
+            background-color: #0b3a27;
+            border-radius: 5px;
+        }
+
+        /* Dropdown */
+        nav ul li ul {
+            display: none;
+            position: absolute;
+            background-color: #0f4a32;
+            top: 40px;
+            left: 0;
+            min-width: 200px;
+            list-style: none;
+            border-radius: 6px;
+            padding: 5px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        nav ul li:hover ul {
+            display: block;
+        }
+
+        /* -------------------------------------
+           MAP SECTION
+        ------------------------------------- */
+        #map-section {
+            padding: 50px 20px;
+            text-align: center;
+        }
+
+        #map {
+            height: 500px;
+            width: 90%;
+            max-width: 900px;
+            margin: auto;
+            border-radius: 14px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            border: 3px solid #0b3d2e;
+        }
+
+        /* -------------------------------------
+           SECTIONS
+        ------------------------------------- */
+        section {
+            padding: 70px 20px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #0b3d2e;
+            margin-bottom: 20px;
+            font-size: 26px;
+        }
+
+        /* -------------------------------------
+           PHOTO CARD
+        ------------------------------------- */
+        .photo-card {
+            width: 90%;
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 14px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+            transition: transform 0.3s, box-shadow 0.3s;
+            opacity: 0;
+            transform: translateY(40px);
+            border: 3px solid #0b3d2e;
+        }
+
+        .photo-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .photo-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .photo-card img {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        .description {
+            margin-top: 15px;
+            font-size: 16px;
+            color: #2b2b2b;
+        }
+
+        /* -------------------------------------
+           BACK TO TOP BUTTON
+        ------------------------------------- */
+        #backToTop {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: #145a3b;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 14px;
+            display: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            transition: 0.3s;
+        }
+
+        #backToTop:hover {
+            background: #0b3d2e;
+            transform: scale(1.07);
+        }
+
+        /* -------------------------------------
+           FOOTER
+        ------------------------------------- */
+        footer {
+            background: #0f4a32;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-top: 60px;
+            letter-spacing: 1px;
+        }
+
+        /* -------------------------------------
+           MOBILE RESPONSIVE
+        ------------------------------------- */
+        @media (max-width: 768px) {
+            header {
+                font-size: 20px;
+                padding: 18px;
+            }
+
+            nav ul {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            nav ul li ul {
+                position: static;
+                width: 100%;
+                box-shadow: none;
+            }
+
+            section {
+                padding: 50px 15px;
+            }
+
+            .photo-card {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    Discover Mindanao’s Hidden Treasures — Deep Within the Rainforest
+</header>
+
+<nav>
+    <ul>
+        <li><a href="#home">Home</a></li>
+
+        <li>
+            <a href="#places">Places</a>
+            <ul>
+                <li><a href="#spot1">Enchanted River</a></li>
+                <li><a href="#spot2">Asik-Asik Falls</a></li>
+                <li><a href="#spot3">Tinuy-an Falls</a></li>
+                <li><a href="#spot4">Lake Sebu</a></li>
+                <li><a href="#spot5">Panampangan Island</a></li>
+                <li><a href="#spot6">Kaputian Beach</a></li>
+                <li><a href="#spot7">Malagos Garden Resort</a></li>
+                <li><a href="#spot8">Sugba Lagoon</a></li>
+                <li><a href="#spot9">Aliwagwag Falls</a></li>
+                <li><a href="#spot10">Pink Beach</a></li>
+            </ul>
+        </li>
+
+        <li><a href="#about">About</a></li>
+        <li><a href="#contact">Contact</a></li>
+    </ul>
+</nav>
+
+<!-- ⭐ INSERTED MAP SECTION -->
+<section id="map-section">
+    <h2>Mindanao Interactive Map</h2>
+    <div id="map"></div>
+</section>
+
+<section id="home">
+    <h2>Welcome to Mindanao Discoveries</h2>
+    <p>
+        Journey into the heart of Mindanao — where waterfalls, rivers, mountains, and untouched jungles
+        reveal breathtaking beauty.
+    </p>
+</section>
+
+<!-- 10 SPOTS (no changes except map added above) -->
+
+<section id="spot1">
+    <h2>Enchanted River (Surigao del Sur)</h2>
+    <div class="photo-card">
+        <img src="images/enchanted_river.jpg">
+        <p class="description">Deep sapphire waters surrounded by ancient forests.</p>
+    </div>
+</section>
+
+<section id="spot2">
+    <h2>Asik-Asik Falls</h2>
+    <div class="photo-card">
+        <img src="images/asik_asik_falls.jpg">
+        <p class="description">A magical wall of water with no visible source.</p>
+    </div>
+</section>
+
+<section id="spot3">
+    <h2>Tinuy-an Falls</h2>
+    <div class="photo-card">
+        <img src="images/tinuy_an_falls.jpg">
+        <p class="description">The “Niagara Falls of the Philippines.”</p>
+    </div>
+</section>
+
+<section id="spot4">
+    <h2>Lake Sebu</h2>
+    <div class="photo-card">
+        <img src="images/lake_sebu.jpg">
+        <p class="description">A serene lake surrounded by lush mountains.</p>
+    </div>
+</section>
+
+<section id="spot5">
+    <h2>Panampangan Island</h2>
+    <div class="photo-card">
+        <img src="images/panampangan_island.jpg">
+        <p class="description">Home to the longest sandbar in the country.</p>
+    </div>
+</section>
+
+<section id="spot6">
+    <h2>Kaputian Beach</h2>
+    <div class="photo-card">
+        <img src="images/kaputian_beach.jpg">
+        <p class="description">White sand beach with rich marine life.</p>
+    </div>
+</section>
+
+<section id="spot7">
+    <h2>Malagos Garden Resort</h2>
+    <div class="photo-card">
+        <img src="images/malagos_garden_resort.jpg">
+        <p class="description">Famous for its botanical gardens and Chocolate Museum.</p>
+    </div>
+</section>
+
+<section id="spot8">
+    <h2>Sugba Lagoon</h2>
+    <div class="photo-card">
+        <img src="images/sugba_lagoon.jpg">
+        <p class="description">Emerald waters perfect for paddleboarding.</p>
+    </div>
+</section>
+
+<section id="spot9">
+    <h2>Aliwagwag Falls</h2>
+    <div class="photo-card">
+        <img src="images/aliwagwag_falls.jpg">
+        <p class="description">Stunning stair-like waterfall system.</p>
+    </div>
+</section>
+
+<section id="spot10">
+    <h2>Pink Beach</h2>
+    <div class="photo-card">
+        <img src="images/pink_beach.jpg">
+        <p class="description">Rose-colored sand made of crushed red corals.</p>
+    </div>
+</section>
+
+<section id="about">
+    <h2>About This Website</h2>
+    <p>This website showcases 10 Hidden Tourist Spots in Mindanao.</p>
+</section>
+
+<section id="contact">
+    <h2>Contact</h2>
+    <p>Email: pajaron.rd.bmst@gmail.com</p>
+</section>
+
+<footer>
+    © 2025 Mindanao Discoveries · All Rights Reserved
+</footer>
+
+<!-- Scroll Animation Script -->
+<script>
+    const cards = document.querySelectorAll('.photo-card');
+    const backToTop = document.getElementById('backToTop');
+
+    function showOnScroll() {
+        cards.forEach(card => {
+            if (card.getBoundingClientRect().top < window.innerHeight - 50) {
+                card.classList.add('visible');
+            }
+        });
+
+        backToTop.style.display = window.scrollY > 300 ? "block" : "none";
+    }
+
+    window.addEventListener('scroll', showOnScroll);
+    window.addEventListener('load', showOnScroll);
+</script>
+
+<!-- ⭐ INTERACTIVE MAP SCRIPT -->
+<script>
+    // Initialize Map
+    const map = L.map('map').setView([8.5, 125], 6.2);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
+    }).addTo(map);
+
+    // Tourist Spots with Coordinates
+    const spots = [
+        { name: "Enchanted River", coords: [9.0091, 126.0974], id: "spot1" },
+        { name: "Asik-Asik Falls", coords: [7.2558, 124.4795], id: "spot2" },
+        { name: "Tinuy-an Falls", coords: [8.1082, 126.3196], id: "spot3" },
+        { name: "Lake Sebu", coords: [6.2244, 124.7145], id: "spot4" },
+        { name: "Panampangan Island", coords: [5.1167, 120.1833], id: "spot5" },
+        { name: "Kaputian Beach", coords: [6.9552, 125.7098], id: "spot6" },
+        { name: "Malagos Garden Resort", coords: [7.1467, 125.4094], id: "spot7" },
+        { name: "Sugba Lagoon", coords: [9.8488, 125.9137], id: "spot8" },
+        { name: "Aliwagwag Falls", coords: [7.8503, 126.3914], id: "spot9" },
+        { name: "Pink Beach", coords: [6.0497, 121.0123], id: "spot10" }
+    ];
+
+    // Add markers to map
+    spots.forEach(spot => {
+        const marker = L.marker(spot.coords).addTo(map);
+
+        marker.bindPopup(`
+            <b>${spot.name}</b><br>
+            <button onclick="scrollToSpot('${spot.id}')">View Details</button>
+        `);
+    });
+
+    // Scroll to section
+    function scrollToSpot(id) {
+        const section = document.getElementById(id);
+        section.scrollIntoView({ behavior: "smooth" });
+    }
+</script>
+
+<div id="backToTop">Top</div>
+
+</body>
+</html>
+
